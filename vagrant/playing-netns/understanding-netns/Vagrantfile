@@ -1,0 +1,18 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # rocky-01
+  config.vm.box = "generic/rocky8"
+  config.vm.define "rocky-01" do | w |
+    w.vm.hostname = "rocky-01"
+    w.vm.network "private_network", ip: "10.0.200.101", virtualbox__intnet: "NatNetwork"
+    w.vm.network "forwarded_port", guest: 22, host: 10122 #, host_ip: "127.0.0.1"
+    w.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.name = "rocky-01"
+    end
+  end
+end

@@ -1,0 +1,19 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # rocky-01
+  config.vm.box = "generic/rocky8"
+  config.vm.define "rocky-01" do | w |
+    w.vm.hostname = "rocky-01"
+    w.vm.network "private_network", ip: "10.0.200.101", virtualbox__intnet: "NatNetwork"
+    w.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+      vb.name = "rocky-01"
+    end
+  end
+  config.vm.provision "file", source: "./custom-bashrc.sh", destination: "/home/vagrant/.bashrc"
+  config.vm.provision :shell, path: "bootstrap.sh"
+end

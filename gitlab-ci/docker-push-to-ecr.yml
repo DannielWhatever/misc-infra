@@ -1,0 +1,37 @@
+services:
+  - docker:dind
+
+variables:
+  AWS_ACCOUNT: 1234567890
+  AWS_REGION: us-east-1
+  IMAGE_NAME: my_image
+
+stages:
+  - auth
+  - build
+  - deploy
+ 
+login_ecr:
+  image: python:latest
+  stage: auth
+  before_script:
+    - pip install awscli 
+  script:
+  - aws ecr get-login-password --region ${AWS_REGION} > file.txt
+  only: ['main']
+  artifacts:
+    paths:
+      - file.txt
+
+
+build_main: 
+  image: docker:20
+  stage: build
+  dependencies:
+    - login_ecr
+  script:
+  - cat ./file.txt | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+  - docker build --force-rm -t ${IMAGE_NAME}:dev .
+  - docker tag ${IMAGE_NAME}:dev ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest
+  - docker push ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest
+  only: ['main']

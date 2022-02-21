@@ -1,0 +1,32 @@
+image: node:latest
+
+variables:
+  BUCKET_NAME: 'my-bucket-name'
+  DIST_NAME: 'my-app'
+
+stages:
+  - build
+  - deploy
+ 
+before_script:
+  - npm install
+
+build_main: 
+  stage: build
+  script:
+  - npm run build
+  only: ['main']
+  artifacts:
+    paths:
+      - dist/
+
+deploy_main:
+  image: python:latest  
+  stage: deploy
+  dependencies:
+    - build_main
+  before_script:
+    - pip install awscli 
+  script:
+    - aws s3 sync ./dist/$DIST_NAME s3://$BUCKET_NAME/ --acl=public-read --delete
+  only: ['main']
